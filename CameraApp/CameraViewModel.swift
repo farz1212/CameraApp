@@ -6,11 +6,13 @@
 //
 
 import AVFoundation
-import SwiftUI
 import Photos
+import SwiftUI
 
 class CameraViewModel: NSObject, ObservableObject {
     @Published var isRecording = false
+    @Published var recordedVideos: [URL] = []
+
     private var captureSession: AVCaptureSession?
     private var videoOutput: AVCaptureMovieFileOutput?
     private var previewLayer: AVCaptureVideoPreviewLayer?
@@ -50,34 +52,35 @@ class CameraViewModel: NSObject, ObservableObject {
         guard let session = captureSession else { return }
 
         session.beginConfiguration()
-        
+
         // Add video input
         guard let videoDevice = AVCaptureDevice.default(for: .video),
-              let videoInput = try? AVCaptureDeviceInput(device: videoDevice),
-              session.canAddInput(videoInput) else {
+            let videoInput = try? AVCaptureDeviceInput(device: videoDevice),
+            session.canAddInput(videoInput)
+        else {
             return
         }
-        
+
         session.addInput(videoInput)
-        
+
         // Add video output
         videoOutput = AVCaptureMovieFileOutput()
         if let output = videoOutput, session.canAddOutput(output) {
             session.addOutput(output)
         }
-        
+
         session.commitConfiguration()
 
         // Prepare preview layer
         previewLayer = AVCaptureVideoPreviewLayer(session: session)
         previewLayer?.videoGravity = .resizeAspectFill
     }
-    
+
     func startSession() {
         guard let session = captureSession else { return }
         DispatchQueue.global(qos: .background).async { [weak self] in
             session.startRunning()
-            
+
             // Ensure we update UI on the main thread after the session starts
             DispatchQueue.main.async {
                 if session.isRunning, let previewLayer = self?.previewLayer {
@@ -86,7 +89,7 @@ class CameraViewModel: NSObject, ObservableObject {
             }
         }
     }
-    
+
     func stopSession() {
         DispatchQueue.global(qos: .background).async { [weak self] in
             self?.captureSession?.stopRunning()
@@ -95,11 +98,12 @@ class CameraViewModel: NSObject, ObservableObject {
 
     func startRecording() {
         guard let output = videoOutput, !output.isRecording else { return }
-        
+
         // Use a unique file name to avoid overwriting previous recordings
         let uniqueFileName = UUID().uuidString + ".mov"
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(uniqueFileName)
-        
+        let tempURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(uniqueFileName)
+
         output.startRecording(to: tempURL, recordingDelegate: self)
         isRecording = true
     }
@@ -115,34 +119,36 @@ class CameraViewModel: NSObject, ObservableObject {
 }
 
 extension CameraViewModel: AVCaptureFileOutputRecordingDelegate {
-    func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {
-            if let error = error {
-                print("Failed to record video: \(error.localizedDescription)")
-                return
-            }
-
-            // Save the video to the Photos album
-            saveVideoToPhotoLibrary(videoURL: outputFileURL)
+    func fileOutput(
+        _ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL,
+        from connections: [AVCaptureConnection], error: Error?
+    ) {
+        if let error = error {
+            print("Failed to record video: \(error.localizedDescription)")
+            return
         }
-    
+
+        //Save to list of videos
+        recordedVideos.append(outputFileURL)
+
+        // Save the video to the Photos album
+        saveVideoToPhotoLibrary(videoURL: outputFileURL)
+    }
+
     private func saveVideoToPhotoLibrary(videoURL: URL) {
-        
-        // Verify the file exists
-            guard FileManager.default.fileExists(atPath: videoURL.path) else {
-                print("Video file does not exist at path: \(videoURL.path)")
-                return
-            }
-        
         PHPhotoLibrary.requestAuthorization { status in
             if status == .authorized {
                 // Save the video to the photo library
                 PHPhotoLibrary.shared().performChanges({
-                    PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: videoURL)
+                    PHAssetChangeRequest.creationRequestForAssetFromVideo(
+                        atFileURL: videoURL)
                 }) { success, error in
                     if success {
                         print("Video saved to photo library successfully.")
                     } else if let error = error {
-                        print("Failed to save video to photo library: \(error.localizedDescription)")
+                        print(
+                            "Failed to save video to photo library: \(error.localizedDescription)"
+                        )
                     }
                 }
             } else {

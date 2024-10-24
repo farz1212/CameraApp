@@ -9,36 +9,37 @@ import SwiftUI
 
 struct RecordingButton: View {
     // Parameters for the button
-    var isRecording: Bool
-    var action: () -> Void
+    @ObservedObject var viewModel: CameraViewModel
+    @State private var navigateToVideoPlayer = false  // State to control navigation
 
     var body: some View {
-        
-        ZStack{
-            Color.black.opacity(0.4)
-            Button(action: {
-                action()
-            }) {
-                ZStack{
-                    Image(systemName: isRecording ? "stop.fill" : "video.fill") // Display different icons based on the state
-                        .frame(width: 60, height: 60)
-                        .background(isRecording ? Color.red : Color.white)
-                        .foregroundColor(.gray)
-                        .clipShape(Circle())
-                        .shadow(color: .gray, radius: 4, x: 0, y: 0)
-                    
-                        Circle()
-                        .stroke(Color.gray, lineWidth: 1)
-                            .padding(5)
-                            .frame(width: 65, height: 65)
-                }
+        // Recorder Button (Center)
+        Button(action: {
+            viewModel.isRecording
+                ? viewModel.stopRecording() : viewModel.startRecording()
+        }) {
+            ZStack {
+                Image(
+                    systemName: viewModel.isRecording
+                        ? "stop.fill" : "video.fill"
+                )
+                .frame(width: 60, height: 60)
+                .background(
+                    viewModel.isRecording ? Color.red : Color.white
+                )
+                .foregroundColor(.gray)
+                .clipShape(Circle())
+                .shadow(color: .gray, radius: 4, x: 0, y: 0)
+
+                Circle()
+                    .stroke(Color.gray, lineWidth: 1)
+                    .padding(5)
+                    .frame(width: 65, height: 65)
             }
-            .padding(.bottom, 15)
         }
-        .frame(height: 125)
-        .ignoresSafeArea()
     }
 }
+
 #Preview {
-    RecordingButton(isRecording: false, action: {})
+    RecordingButton(viewModel: CameraViewModel())
 }
