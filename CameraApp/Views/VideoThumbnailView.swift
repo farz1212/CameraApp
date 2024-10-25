@@ -10,7 +10,8 @@ import AVFoundation
 
 struct VideoThumbnailView: View {
     var videoURL: URL
-    @State private var thumbnailImage: Image? // To store the thumbnail image
+    
+    @State private var thumbnailImage: Image?
 
     var body: some View {
         VStack {
@@ -18,15 +19,16 @@ struct VideoThumbnailView: View {
                 image
                     .resizable()
                     .scaledToFill()
-                    .frame(width: 80, height: 80) // Set thumbnail size
+                    .frame(width: 80, height: 80)
                     .cornerRadius(8)
             } else {
-                Rectangle() // Placeholder if thumbnail not available
+                // Placeholder if thumbnail not available
+                Rectangle()
                     .fill(Color.gray)
                     .frame(width: 80, height: 80)
                     .cornerRadius(8)
                     .onAppear {
-                        generateThumbnail() // Generate thumbnail when the view appears
+                        generateThumbnail()
                     }
             }
         }

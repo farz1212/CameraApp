@@ -23,7 +23,9 @@ struct CameraView: View {
                     VStack {
                         Color.black.opacity(0.4)
                             .frame(height: 100)
+                        
                         Spacer()
+                        
                         ZStack {
 
                             Color.black.opacity(0.4)

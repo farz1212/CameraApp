@@ -5,19 +5,21 @@
 //  Created by Farzaad Goiporia on 2024-10-24.
 //
 
-import SwiftUI
 import AVKit
+import SwiftUI
 
 struct VideoPlayerView: View {
     @StateObject private var viewModel: VideoPlayerViewModel
 
     // Initialize the view model with recorded videos
     init(recordedVideos: [URL]) {
-        _viewModel = StateObject(wrappedValue: VideoPlayerViewModel(recordedVideos: recordedVideos))
+        _viewModel = StateObject(
+            wrappedValue: VideoPlayerViewModel(recordedVideos: recordedVideos))
     }
 
     var body: some View {
         VStack {
+            
             // Video Player for the currently selected video
             if let player = viewModel.player {
                 ZStack(alignment: .top) {
@@ -27,16 +29,18 @@ struct VideoPlayerView: View {
                         .onAppear {
                             viewModel.setupPlayer()
                         }
-                    
+
                     Color.black.opacity(0.4)
                         .frame(height: 100)
                 }
-                
-                HStack{
+
+                HStack {
+                    
                     // Horizontal ScrollView for video thumbnails
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack {
-                            ForEach(viewModel.recordedVideos, id: \.self) { videoURL in
+                            ForEach(viewModel.recordedVideos, id: \.self) {
+                                videoURL in
                                 VideoThumbnailView(videoURL: videoURL)
                                     .cornerRadius(15)
                                     .padding(.vertical, 10)
@@ -62,9 +66,12 @@ struct VideoPlayerView: View {
                             .padding(.trailing, 20)
                     }
                 }
-                .alert("Video saved to gallery", isPresented: $viewModel.showAlert) {
-                            Button("OK", role: .cancel) { }}
-                
+                .alert(
+                    "Video saved to gallery", isPresented: $viewModel.showAlert
+                ) {
+                    Button("OK", role: .cancel) {}
+                }
+
             } else {
                 Text("No video available")
                     .background(Color.white)
@@ -86,8 +93,7 @@ struct VideoPlayerView: View {
     // Provide some dummy video URLs for preview
     let dummyVideoURLs: [URL] = [
         URL(string: "https://example.com/sample1.mp4")!,
-        URL(string: "https://example.com/sample2.mp4")!
     ]
-    
+
     VideoPlayerView(recordedVideos: dummyVideoURLs)
 }

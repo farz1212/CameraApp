@@ -8,16 +8,17 @@
 import SwiftUI
 
 struct RecordingButton: View {
+
     // Parameters for the button
     @ObservedObject var viewModel: CameraViewModel
     @State private var navigateToVideoPlayer = false  // State to control navigation
 
     var body: some View {
-        // Recorder Button (Center)
-        Button(action: {
+        Button {
             viewModel.isRecording
                 ? viewModel.stopRecording() : viewModel.startRecording()
-        }) {
+        } label: {
+
             ZStack {
                 Image(
                     systemName: viewModel.isRecording
