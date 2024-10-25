@@ -27,32 +27,31 @@ struct VideoPlayerView: View {
             if let player = player {
                 VideoPlayer(player: player)
                     .onAppear {
-                        setupPlayer(url: currentVideoURL) // Set up the player when the view appears
+                        setupPlayer(url: currentVideoURL)
                     }
-                    .frame(height: UIScreen.main.bounds.height * 0.8) // 80% height
-                    .onDisappear {
-                        stopAndReleasePlayer() // Stop and release the player when the view disappears
-                    }
+                
             } else {
                 Text("No video available")
-                    .frame(height: UIScreen.main.bounds.height * 0.8)
                     .background(Color.black)
             }
             
             // Horizontal ScrollView for video thumbnails
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
+                HStack {
                     ForEach(recordedVideos, id: \.self) { videoURL in
                         VideoThumbnailView(videoURL: videoURL)
+                            .padding(5)
+                            .cornerRadius(15)
                             .onTapGesture {
-                                playVideo(url: videoURL) // Play selected video
+                                playVideo(url: videoURL)
                             }
                     }
                 }
-                .padding()
             }
-            .frame(height: UIScreen.main.bounds.height * 0.2) // 20% height
+            .padding(.horizontal, 20)
         }
+        .padding(.bottom, 25)
+        .ignoresSafeArea(.all)
         .onAppear {
             if currentVideoURL != nil {
                 setupPlayer(url: currentVideoURL)
